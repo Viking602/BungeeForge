@@ -27,7 +27,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListenerI
     @Unique
     private static final Pattern PROP_PATTERN = Pattern.compile("\\w{0,16}");
 
-    @Redirect(method = "startClientVerification(Lcom/mojang/authlib/GameProfile;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerLoginPacketListenerImpl;authenticatedProfile:Lcom/mojang/authlib/GameProfile;", opcode = Opcodes.PUTFIELD))
+    @Redirect(method = "startClientVerification(Lcom/mojang/authlib/GameProfile;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerLoginPacketListenerImpl;authenticatedProfile:Lcom/mojang/authlib/GameProfile;", opcode = Opcodes.PUTFIELD), remap = false)
     public void bungee$startClientVerification(net.minecraft.server.network.ServerLoginPacketListenerImpl instance, GameProfile value) {
         var connectionBridge = (ConnectionBridge)bungee$getConnection();
 
