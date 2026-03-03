@@ -17,7 +17,7 @@ public class ServerHandshakePacketListenerImpl {
     @Shadow
     private Connection connection;
 
-    @Inject(method = "handleIntention(Lnet/minecraft/network/protocol/handshake/ClientIntentionPacket;)V", at = @At("HEAD"))
+    @Inject(method = "handleIntention(Lnet/minecraft/network/protocol/handshake/ClientIntentionPacket;)V", at = @At("HEAD"), remap = false)
     public void bungee$handleIntention(ClientIntentionPacket p_9975_, CallbackInfo ci) {
         ClientIntentionPacketBridge clientIntentionPacketBridge = (ClientIntentionPacketBridge) (Object) p_9975_;
         ConnectionBridge connectionBridge = (ConnectionBridge) connection;
