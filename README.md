@@ -1,19 +1,23 @@
 ## BungeeForge
-BungeeForge is a Forge mod that implements BungeeCord (legacy) protocol.  
-At first it was developed to support Velocity legacy forwarding but it can also work for other Bungee proxies. 
+BungeeForge is a NeoForge mod that implements BungeeCord legacy forwarding.
+It was originally built for Velocity legacy forwarding and also works with other Bungee-compatible proxies.
 
-### Usage:
-- Download the mod into mods/ directory on your server
-- Setup Velocity (velocity.toml) option `player-info-forwarding-mode` to `legacy`
-- Configure your Forge server (server.properties) option `online-mode` to `false`
-- Connect through Velocity to your Forge server
-- You should see skins and IP forwarding works
+### Tested target
+- Minecraft `1.21.1`
+- NeoForge `21.1.219`
 
-### WARN: Minecraft 1.13 +
-This modification requires both Proxy and Forge to be compatible. Unfortunately, currently, Forge for Minecraft 1.13 (and newer) is not compatible with proxies due to the lack of a "reset" packet to gracefully reset client registries between server switches. To implement this functionality, there is an available plugin called [Ambassador](https://github.com/adde0109/Ambassador) which was thankfully developed by adde0109. **Install both [BungeeForge](https://github.com/caunt/BungeeForge/releases) and [Ambassador](https://github.com/adde0109/Ambassador/releases) on 1.13+ setups**. For Minecraft 1.12.2 and lower versions, BungeeForge works by itself.
+### Usage
+- Put the mod jar into the server `mods/` directory
+- In `velocity.toml`, set `player-info-forwarding-mode = "legacy"`
+- In backend server `server.properties`, set `online-mode=false`
+- Start the NeoForge server and connect through Velocity/Bungee proxy
+- Skin and IP forwarding should now work
+
+### Warning for Minecraft 1.13+ networks
+Proxy switching on modern versions still requires compatible proxy/backend behavior. If your setup needs registry reset compatibility between switches, install [Ambassador](https://github.com/adde0109/Ambassador) alongside BungeeForge.
 
 ### Other versions
-Other Forge versions can be supported as well. Please feel free to create a Issue and ask.
+If you need support for other NeoForge versions, open an issue with your target Minecraft + NeoForge version.
 
-# Void Proxy
-Take a look at [**Void Proxy**](https://github.com/caunt/Void) as alternative to BungeeCord and Velocity.  
+### Void Proxy
+You can also check [Void Proxy](https://github.com/caunt/Void) as an alternative to BungeeCord and Velocity.
