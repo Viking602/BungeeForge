@@ -8,4 +8,5 @@ public interface ClientIntentionPacketBridge {
     String bungee$getSpoofedAddress();
     UUID bungee$getSpoofedId();
     Property[] bungee$getSpoofedProperties();
+    boolean bungee$hasSpoofedProfile();
 }

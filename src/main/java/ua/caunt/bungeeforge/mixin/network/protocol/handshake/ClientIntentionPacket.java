@@ -6,7 +6,9 @@ import net.minecraft.network.protocol.handshake.ClientIntent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ua.caunt.bungeeforge.bridge.network.protocol.handshake.ClientIntentionPacketBridge;
 
 import java.util.Arrays;
@@ -16,14 +18,19 @@ import java.util.UUID;
 @Mixin(net.minecraft.network.protocol.handshake.ClientIntentionPacket.class)
 public class ClientIntentionPacket implements ClientIntentionPacketBridge {
     @Unique
-    private static String bungee$spoofedAddress;
+    private String bungee$spoofedAddress;
     @Unique
-    private static UUID bungee$spoofedId;
+    private UUID bungee$spoofedId;
     @Unique
-    private static Property[] bungee$spoofedProperties;
+    private Property[] bungee$spoofedProperties;
 
     @Unique
+    private static final ThreadLocal<SpoofedProfile> bungee$pendingSpoofedProfile = new ThreadLocal<>();
+    @Unique
     private static final Gson bungee$gson = new Gson();
+
+    @Unique
+    private record SpoofedProfile(String address, UUID id, Property[] properties) { }
 
     // In MC 1.21.1, ClientIntentionPacket is a record with canonical constructor:
     // ClientIntentionPacket(int protocolVersion, String hostName, int port, ClientIntent intention)
@@ -35,24 +42,51 @@ public class ClientIntentionPacket implements ClientIntentionPacketBridge {
             index = 2
     )
     private static String bungee$modifyHostName(String hostName) {
+        bungee$pendingSpoofedProfile.remove();
+
         var chunks = hostName.split("\0");
 
-        if (chunks.length <= 2)
+        if (chunks.length <= 3)
+            return hostName;
+        if (chunks[1].isBlank())
             return hostName;
 
-        var properties = bungee$gson.fromJson(chunks[3], Property[].class);
+        try {
+            var properties = bungee$gson.fromJson(chunks[3], Property[].class);
+            if (properties == null)
+                return hostName;
 
-        bungee$spoofedAddress = chunks[1];
-        bungee$spoofedId = UUID.fromString(ensureDashesInUuid(chunks[2]));
-        bungee$spoofedProperties = Arrays.stream(properties)
-                .filter(property -> !isFmlMarker(property))
-                .toArray(Property[]::new);
+            var spoofedId = UUID.fromString(ensureDashesInUuid(chunks[2]));
+            var spoofedProperties = Arrays.stream(properties)
+                    .filter(Objects::nonNull)
+                    .filter(property -> !isFmlMarker(property))
+                    .toArray(Property[]::new);
 
-        return chunks[1];
+            bungee$pendingSpoofedProfile.set(new SpoofedProfile(chunks[1], spoofedId, spoofedProperties));
+            return chunks[1];
+        } catch (RuntimeException ignored) {
+            bungee$pendingSpoofedProfile.remove();
+            return hostName;
+        }
+    }
+
+    @Inject(method = "<init>(ILjava/lang/String;ILnet/minecraft/network/protocol/handshake/ClientIntent;)V", at = @At("RETURN"))
+    private void bungee$captureSpoofedProfile(int protocolVersion, String hostName, int port, ClientIntent intention, CallbackInfo ci) {
+        var spoofedProfile = bungee$pendingSpoofedProfile.get();
+        bungee$pendingSpoofedProfile.remove();
+
+        if (spoofedProfile == null)
+            return;
+
+        bungee$spoofedAddress = spoofedProfile.address();
+        bungee$spoofedId = spoofedProfile.id();
+        bungee$spoofedProperties = spoofedProfile.properties();
     }
 
     private static boolean isFmlMarker(Property property) {
-        return Objects.equals(property.name(), "extraData") && property.value().startsWith("\u0001FORGE");
+        return Objects.equals(property.name(), "extraData")
+                && property.value() != null
+                && property.value().startsWith("\u0001FORGE");
     }
 
     private static String ensureDashesInUuid(String source) {
@@ -81,5 +115,10 @@ public class ClientIntentionPacket implements ClientIntentionPacketBridge {
     @Override
     public Property[] bungee$getSpoofedProperties() {
         return bungee$spoofedProperties;
+    }
+
+    @Override
+    public boolean bungee$hasSpoofedProfile() {
+        return bungee$spoofedAddress != null && bungee$spoofedId != null && bungee$spoofedProperties != null;
     }
 }

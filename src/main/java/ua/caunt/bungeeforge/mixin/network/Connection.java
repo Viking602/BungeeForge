@@ -29,6 +29,8 @@ public class Connection implements ConnectionBridge {
     @Override
     public void bungee$setSpoofedAddress(String spoofedAddress) {
         this.bungee$spoofedAddress = spoofedAddress;
+        if (spoofedAddress == null || spoofedAddress.isBlank())
+            return;
         this.address = new InetSocketAddress(spoofedAddress, 0);
     }
 
