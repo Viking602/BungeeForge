@@ -34,6 +34,7 @@ public final class VelocityForwarding {
 
     private static volatile String secret = null;
     private static volatile boolean loaded = false;
+    private static final ThreadLocal<Boolean> velocityQueryPending = ThreadLocal.withInitial(() -> false);
 
     private VelocityForwarding() {}
 
@@ -54,6 +55,14 @@ public final class VelocityForwarding {
             loadSecret(Path.of("."));
         }
         return secret != null && !secret.isEmpty();
+    }
+
+    public static void setVelocityQueryPending(boolean pending) {
+        velocityQueryPending.set(pending);
+    }
+
+    public static boolean isVelocityQueryPending() {
+        return velocityQueryPending.get();
     }
 
     public static boolean checkIntegrity(final FriendlyByteBuf buf) {
