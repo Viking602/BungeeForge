@@ -63,7 +63,7 @@ public class ClientIntentionPacket implements ClientIntentionPacketBridge {
                     .toArray(Property[]::new);
 
             bungee$pendingSpoofedProfile.set(new SpoofedProfile(chunks[1], spoofedId, spoofedProperties));
-            return chunks[1];
+            return chunks[0];
         } catch (RuntimeException ignored) {
             bungee$pendingSpoofedProfile.remove();
             return hostName;
