@@ -20,7 +20,7 @@ public abstract class ServerboundCustomQueryAnswerPacketMixin {
 
     @Inject(method = "readUnknownPayload", at = @At("HEAD"), cancellable = true, remap = false)
     private static void bungee$readVelocityPayload(FriendlyByteBuf pBuffer, CallbackInfoReturnable<CustomQueryAnswerPayload> cir) {
-        if (!VelocityForwarding.isEnabled()) return;
+        if (!VelocityForwarding.isEnabled() || !VelocityForwarding.isVelocityQueryPending()) return;
 
         FriendlyByteBuf buffer = pBuffer.readNullable(buf -> {
             int size = buf.readableBytes();

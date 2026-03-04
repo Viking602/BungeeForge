@@ -48,6 +48,7 @@ public abstract class ServerLoginPacketListenerImplVelocity {
             return;
 
         bungee$velocityLoginMessageId = ThreadLocalRandom.current().nextInt();
+        VelocityForwarding.setVelocityQueryPending(true);
         connection.send(new ClientboundCustomQueryPacket(
                 bungee$velocityLoginMessageId,
                 new VelocityForwarding.VelocityMaxVersionPayload((byte) VelocityForwarding.MAX_SUPPORTED_FORWARDING_VERSION)
@@ -60,6 +61,7 @@ public abstract class ServerLoginPacketListenerImplVelocity {
         if (!VelocityForwarding.isEnabled() || packet.transactionId() != bungee$velocityLoginMessageId)
             return;
 
+        VelocityForwarding.setVelocityQueryPending(false);
         ci.cancel();
 
         if (packet.payload() == null) {
@@ -70,21 +72,25 @@ public abstract class ServerLoginPacketListenerImplVelocity {
         VelocityForwarding.VelocityPlayerDataPayload payload = (VelocityForwarding.VelocityPlayerDataPayload) packet.payload();
         var buf = payload.buffer();
 
-        if (!VelocityForwarding.checkIntegrity(buf)) {
-            disconnect(Component.literal("Unable to verify player details"));
-            return;
+        try {
+            if (!VelocityForwarding.checkIntegrity(buf)) {
+                disconnect(Component.literal("Unable to verify player details"));
+                return;
+            }
+
+            int version = buf.readVarInt();
+            if (version > VelocityForwarding.MAX_SUPPORTED_FORWARDING_VERSION) {
+                disconnect(Component.literal("Unsupported Velocity forwarding version " + version + " (maximum supported: " + VelocityForwarding.MAX_SUPPORTED_FORWARDING_VERSION + ")"));
+                return;
+            }
+
+            var playerAddress = VelocityForwarding.readAddress(buf);
+            ((ConnectionBridge) connection).bungee$setSpoofedAddress(playerAddress.getHostAddress());
+
+            var profile = VelocityForwarding.createProfile(buf);
+            startClientVerification(profile);
+        } finally {
+            buf.release();
         }
-
-        int version = buf.readVarInt();
-        if (version > VelocityForwarding.MAX_SUPPORTED_FORWARDING_VERSION) {
-            disconnect(Component.literal("Unsupported Velocity forwarding version " + version + " (maximum supported: " + VelocityForwarding.MAX_SUPPORTED_FORWARDING_VERSION + ")"));
-            return;
-        }
-
-        var playerAddress = VelocityForwarding.readAddress(buf);
-        ((ConnectionBridge) connection).bungee$setSpoofedAddress(playerAddress.getHostAddress());
-
-        var profile = VelocityForwarding.createProfile(buf);
-        startClientVerification(profile);
     }
 }
