@@ -6,8 +6,10 @@
   "mixins": [
     "network.Connection",
     "network.protocol.handshake.ClientIntentionPacket",
+    "network.protocol.login.ServerboundCustomQueryAnswerPacketMixin",
     "server.network.ServerHandshakePacketListenerImpl",
-    "server.network.ServerLoginPacketListenerImpl"
+    "server.network.ServerLoginPacketListenerImpl",
+    "server.network.ServerLoginPacketListenerImplVelocity"
   ],
   "client": [],
   "minVersion": "0.8"
