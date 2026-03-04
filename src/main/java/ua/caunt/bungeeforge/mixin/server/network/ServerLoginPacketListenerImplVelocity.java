@@ -39,7 +39,7 @@ public abstract class ServerLoginPacketListenerImplVelocity {
 
     @Inject(
             method = "handleHello",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerLoginPacketListenerImpl;startClientVerification(Lcom/mojang/authlib/GameProfile;)V", ordinal = 1),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerLoginPacketListenerImpl;startClientVerification(Lcom/mojang/authlib/GameProfile;)V", ordinal = 1, remap = false),
             cancellable = true
     )
     private void bungee$handleHelloVelocity(ServerboundHelloPacket pPacket, CallbackInfo ci) {
