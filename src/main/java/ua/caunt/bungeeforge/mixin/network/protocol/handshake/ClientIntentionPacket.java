@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ua.caunt.bungeeforge.bridge.network.protocol.handshake.ClientIntentionPacketBridge;
@@ -31,6 +32,19 @@ public class ClientIntentionPacket implements ClientIntentionPacketBridge {
 
     @Unique
     private record SpoofedProfile(String address, UUID id, Property[] properties) { }
+
+    // In MC 1.21.1, ClientIntentionPacket has a private constructor that reads from FriendlyByteBuf.
+    // Vanilla limits the hostname to 255 characters via readUtf(255), but BungeeCord/Velocity legacy
+    // forwarding embeds player IP, UUID, and skin properties in the hostname, easily exceeding 255 chars.
+    // Paper/Spigot applies the same fix: increase the limit to Short.MAX_VALUE.
+    @ModifyArg(
+            method = "<init>(Lnet/minecraft/network/FriendlyByteBuf;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;readUtf(I)Ljava/lang/String;"),
+            remap = false
+    )
+    private static int bungee$increaseHostnameLimit(int original) {
+        return Short.MAX_VALUE;
+    }
 
     // In MC 1.21.1, ClientIntentionPacket is a record with canonical constructor:
     // ClientIntentionPacket(int protocolVersion, String hostName, int port, ClientIntent intention)
