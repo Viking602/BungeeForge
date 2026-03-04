@@ -18,7 +18,7 @@ public abstract class ServerboundCustomQueryAnswerPacketMixin {
     @Final
     private static int MAX_PAYLOAD_SIZE;
 
-    @Inject(method = "readUnknownPayload", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "readUnknownPayload", at = @At("HEAD"), cancellable = true, remap = false)
     private static void bungee$readVelocityPayload(FriendlyByteBuf pBuffer, CallbackInfoReturnable<CustomQueryAnswerPayload> cir) {
         if (!VelocityForwarding.isEnabled()) return;
 

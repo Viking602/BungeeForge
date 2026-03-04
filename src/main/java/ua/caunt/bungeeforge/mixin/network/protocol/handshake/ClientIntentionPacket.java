@@ -70,7 +70,7 @@ public class ClientIntentionPacket implements ClientIntentionPacketBridge {
         }
     }
 
-    @Inject(method = "<init>(ILjava/lang/String;ILnet/minecraft/network/protocol/handshake/ClientIntent;)V", at = @At("RETURN"))
+    @Inject(method = "<init>(ILjava/lang/String;ILnet/minecraft/network/protocol/handshake/ClientIntent;)V", at = @At("RETURN"), remap = false)
     private void bungee$captureSpoofedProfile(int protocolVersion, String hostName, int port, ClientIntent intention, CallbackInfo ci) {
         var spoofedProfile = bungee$pendingSpoofedProfile.get();
         bungee$pendingSpoofedProfile.remove();

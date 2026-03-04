@@ -40,7 +40,8 @@ public abstract class ServerLoginPacketListenerImplVelocity {
     @Inject(
             method = "handleHello",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerLoginPacketListenerImpl;startClientVerification(Lcom/mojang/authlib/GameProfile;)V", ordinal = 1, remap = false),
-            cancellable = true
+            cancellable = true,
+            remap = false
     )
     private void bungee$handleHelloVelocity(ServerboundHelloPacket pPacket, CallbackInfo ci) {
         if (!VelocityForwarding.isEnabled())
@@ -54,7 +55,7 @@ public abstract class ServerLoginPacketListenerImplVelocity {
         ci.cancel();
     }
 
-    @Inject(method = "handleCustomQueryPacket", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "handleCustomQueryPacket", at = @At("HEAD"), cancellable = true, remap = false)
     private void bungee$handleCustomQueryPacket(ServerboundCustomQueryAnswerPacket packet, CallbackInfo ci) {
         if (!VelocityForwarding.isEnabled() || packet.transactionId() != bungee$velocityLoginMessageId)
             return;
