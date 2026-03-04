@@ -6,9 +6,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.neoforged.neoforge.network.connection.ConnectionType;
+import net.neoforged.neoforge.network.filters.GenericPacketSplitter;
 import net.neoforged.neoforge.network.filters.NetworkFilters;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
-import net.neoforged.neoforge.network.registration.NetworkPayloadSetup;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -39,10 +39,17 @@ public abstract class ServerConfigurationPacketListenerImplMixin extends ServerC
 
         // Force connection type to OTHER so NeoForge applies vanilla-compatible packet filters
         ChannelAttributes.setConnectionType(this.connection, ConnectionType.OTHER);
-        // Clear the negotiated payload setup so GenericPacketSplitter is not injected
-        ChannelAttributes.setPayloadSetup(this.connection, NetworkPayloadSetup.empty());
+        // Keep the negotiated payload setup so that mod payloads (e.g. kubejs:sync_server_data)
+        // pass NetworkRegistry.checkPacket() during the datapack sync event in placeNewPlayer
         // Reinject network filters with the corrected connection type
         NetworkFilters.cleanIfNecessary(this.connection);
         NetworkFilters.injectIfNecessary(this.connection);
+        // Remove GenericPacketSplitter — proxies cannot reassemble split packets.
+        // We do this after filter injection because GenericPacketSplitter.isNecessary() checks
+        // if the SplitPacketPayload channel is in the payload setup (which we now preserve).
+        var pipeline = this.connection.channel().pipeline();
+        if (pipeline.get(GenericPacketSplitter.CHANNEL_HANDLER_NAME) != null) {
+            pipeline.remove(GenericPacketSplitter.CHANNEL_HANDLER_NAME);
+        }
     }
 }
