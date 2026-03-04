@@ -2,13 +2,14 @@ package ua.caunt.bungeeforge.mixin.server.network;
 
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import net.neoforged.neoforge.network.filters.NetworkFilters;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
 import net.neoforged.neoforge.network.registration.NetworkPayloadSetup;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,24 +25,24 @@ import ua.caunt.bungeeforge.bridge.network.ConnectionBridge;
  * that Velocity cannot decode ("A packet did not decode successfully").
  */
 @Mixin(net.minecraft.server.network.ServerConfigurationPacketListenerImpl.class)
-public class ServerConfigurationPacketListenerImplMixin {
+public abstract class ServerConfigurationPacketListenerImplMixin extends ServerCommonPacketListenerImpl {
 
-    @Shadow
-    @Final
-    Connection connection;
+    protected ServerConfigurationPacketListenerImplMixin(MinecraftServer server, Connection connection, CommonListenerCookie cookie) {
+        super(server, connection, cookie);
+    }
 
     @Inject(method = "handleConfigurationFinished", at = @At("HEAD"), remap = false)
     private void bungee$forceVanillaForProxy(ServerboundFinishConfigurationPacket packet, CallbackInfo ci) {
-        ConnectionBridge bridge = (ConnectionBridge) connection;
+        ConnectionBridge bridge = (ConnectionBridge) this.connection;
         if (!bridge.bungee$getSpoofedAddress().isPresent())
             return;
 
         // Force connection type to OTHER so NeoForge applies vanilla-compatible packet filters
-        ChannelAttributes.setConnectionType(connection, ConnectionType.OTHER);
+        ChannelAttributes.setConnectionType(this.connection, ConnectionType.OTHER);
         // Clear the negotiated payload setup so GenericPacketSplitter is not injected
-        ChannelAttributes.setPayloadSetup(connection, NetworkPayloadSetup.empty());
+        ChannelAttributes.setPayloadSetup(this.connection, NetworkPayloadSetup.empty());
         // Reinject network filters with the corrected connection type
-        NetworkFilters.cleanIfNecessary(connection);
-        NetworkFilters.injectIfNecessary(connection);
+        NetworkFilters.cleanIfNecessary(this.connection);
+        NetworkFilters.injectIfNecessary(this.connection);
     }
 }
