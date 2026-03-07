@@ -40,6 +40,10 @@ public abstract class ServerPlayerMixin {
 
         ServerPlayer self = (ServerPlayer) (Object) this;
 
+        // Only check every 20 ticks (once per second) to reduce overhead,
+        // since flight attribute changes are infrequent (potion apply/expire).
+        if (self.tickCount % 20 != 0) return;
+
         // Only apply to proxy connections
         ConnectionBridge bridge = (ConnectionBridge) ((ServerCommonPacketListenerAccessor) this.connection).bungee$getConnection();
         if (!bridge.bungee$getSpoofedAddress().isPresent()) return;
