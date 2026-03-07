@@ -34,7 +34,7 @@ public abstract class ServerPlayerMixin {
     @Shadow
     public ServerGamePacketListenerImpl connection;
 
-    @Inject(method = "doTick", at = @At("TAIL"))
+    @Inject(method = "tick", at = @At("TAIL"))
     private void bungee$syncCreativeFlightAbility(CallbackInfo ci) {
         if (this.connection == null) return;
 
