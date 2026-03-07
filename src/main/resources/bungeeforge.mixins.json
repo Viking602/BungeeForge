@@ -7,7 +7,6 @@
     "network.Connection",
     "network.protocol.handshake.ClientIntentionPacket",
     "network.protocol.login.ServerboundCustomQueryAnswerPacketMixin",
-    "server.level.ServerPlayerMixin",
     "server.network.ServerCommonPacketListenerAccessor",
     "server.network.ServerConfigurationPacketListenerImplMixin",
     "server.network.ServerHandshakePacketListenerImpl",
