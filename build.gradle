@@ -35,7 +35,7 @@ runs {
 
     server {
         systemProperty 'forge.enabledGameTestNamespaces', mod_id
-        programArgument '--nogui'
+        arguments.add '--nogui'
     }
 
     // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -47,7 +47,7 @@ runs {
 
     data {
         // example of overriding the workingDirectory set in configureEach above
-        programArguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        arguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
     }
 }
 
