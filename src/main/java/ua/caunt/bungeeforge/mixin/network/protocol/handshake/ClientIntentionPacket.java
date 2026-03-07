@@ -53,7 +53,8 @@ public class ClientIntentionPacket implements ClientIntentionPacketBridge {
             method = "<init>(ILjava/lang/String;ILnet/minecraft/network/protocol/handshake/ClientIntent;)V",
             at = @At("HEAD"),
             argsOnly = true,
-            index = 2
+            index = 2,
+            remap = false
     )
     private static String bungee$modifyHostName(String hostName) {
         bungee$pendingSpoofedProfile.remove();
